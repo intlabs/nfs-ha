@@ -1,0 +1,38 @@
+# ganesha.conf (configuration file for ganesha.nfsd) -*- conf -*-
+#
+# These settings are quite subtle, take care when changing, make sure
+# you run suitable regression tests.
+
+NFS_CORE_PARAM {
+        Protocols = 3, 4;
+        MNT_Port = 20048;
+        NLM_Port = 32803;
+        fsid_device = false;
+}
+
+EXPORT_DEFAULTS {
+        Access_Type = RW;
+}
+
+LOG {
+        Default_Log_Level = INFO;
+}
+
+NFSV4
+{
+        Grace_Period = 30;
+        Only_Numeric_Owners = true;
+}
+
+EXPORT
+{
+        Export_Id = 1;
+        Protocols = 3, 4;
+        Path = /store/export/;
+        Pseudo = /store/export/;
+        Access_Type = RW;
+        Squash = no_root_squash;
+        FSAL {
+                Name = VFS;
+        }
+}

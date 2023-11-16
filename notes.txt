@@ -1,0 +1,53 @@
+1) POds recreate and move faster:
+    Node down detection
+    Read write once:
+        Safe lun mapping snapshot revokation
+
+2) Active-passive:
+    * corosync/pacemaker:
+    * leader election:
+      * ucarp: small
+      * vrrpd: big 34mb in mariner
+      * etcd: promotion
+        * convergenge under <10s
+
+3)
+
+k8s things:
+1) run one pod on node foo.
+2) node foo goes down
+3) after k8s detects its been offline (180 seconds say), it marks node offline
+4) k8s scheduler starts clock ticking on how long the pod can be on a down node (i think this is currently around 240 seconds by default)
+5) time has expired, and so it starts to find a new node to run the pod on
+6) schedules pod to run on node bar
+6a) creates pod sandbox on bar
+6b) undercloud csi starts to attach pv to node
+6c) pod starts nfs container (may need to pull it if not already there)
+6d) mounts filesystem
+6e) starts nfs server
+
+
+
+
+
+NFS - Active-Passive HA:
+
+2 or more Pods:
+ *) Each pod has the volume from the pure mapped to it (ie there is a lun attached to the host)
+ *) Each contains a leader election mechanim (pacemaker/ucarp/vrrpd) that on deciding its the:
+    leader(the active node):
+      a) takes snapshot of volume via pure api
+      b) mounts filesystem of volume
+      c) starts nfs server
+      d) moves VIP to it
+    followers(the passive nodes):
+      a) stops nfs server if running
+      b) unmouts fileystem if mounted
+
+Questions:
+1) how do we do the VIP:
+        a) k8s `native`?
+        b) keepalived or similar?
+2) how to monitor
+3) need to look back throuh kusto of deployments to look for potential 'false' triggers etc like network drops and feed this into how we do the leader election
+4) how to validate/ensure clients are happy
